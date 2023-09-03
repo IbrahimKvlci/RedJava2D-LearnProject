@@ -7,14 +7,14 @@ using UnityEditor;
 
 
 #if UNITY_EDITOR
-[CustomEditor(typeof(Saw))]
+[CustomEditor(typeof(EnemyControl))]
 [System.Serializable]
-class SawEditor : Editor
+class EnemyEditor : Editor
 {
     public override void OnInspectorGUI()
     {
-        Saw script = (Saw)target;
-        if (GUILayout.Button("Create",GUILayout.MinWidth(100),GUILayout.Width(100)))
+        EnemyControl script = (EnemyControl)target;
+        if (GUILayout.Button("Create", GUILayout.MinWidth(100), GUILayout.Width(100)))
         {
             GameObject newObject = new GameObject();
             newObject.transform.parent = script.transform;

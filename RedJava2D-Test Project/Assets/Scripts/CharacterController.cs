@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CharacterController : MonoBehaviour
 {
@@ -13,6 +14,9 @@ public class CharacterController : MonoBehaviour
     [SerializeField]
     private float _speed, _jumpSpeed;
     private bool _jumpControl=true;
+    [SerializeField] int _heal;
+
+    [SerializeField] Text _healText;
 
     private Vector3 _cameraFirstPos,_cameraLastPos;
 
@@ -24,6 +28,8 @@ public class CharacterController : MonoBehaviour
         _animator=GetComponent<Animator>();
         _camera = GameObject.FindGameObjectWithTag("MainCamera");
         _cameraFirstPos = _camera.transform.position-transform.position;
+        _heal = 100;
+        _healText.text = $"HEAL {_heal}";
     }
 
     private void Update()
@@ -59,6 +65,12 @@ public class CharacterController : MonoBehaviour
         
     }
 
+    public void TakeDamage(int damage)
+    {
+        _heal -= damage;
+        _healText.text = $"HEAL {_heal}";
+    }
+
     void CameraControl()
     {
         _cameraLastPos = _cameraFirstPos + transform.position;
@@ -75,4 +87,5 @@ public class CharacterController : MonoBehaviour
     {
         _jumpControl = true;
     }
+
 }

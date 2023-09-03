@@ -2,23 +2,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Saw : MonoBehaviour
+public class FireControl : MonoBehaviour
 {
-    [SerializeField] float _rotateSpeed=10;
-    [SerializeField] int _damage;
-
+    CubeEnemy _cubeEnemy;
+    Rigidbody2D _rigidBody;
     CharacterController _characterController;
+
+    [SerializeField] int _damage;
 
     void Start()
     {
+        _cubeEnemy=GameObject.FindGameObjectWithTag("Enemy").GetComponent<CubeEnemy>();
+        _rigidBody=GetComponent<Rigidbody2D>();
+        _rigidBody.AddForce(_cubeEnemy.GetPlayerDirection() *1000);
         _characterController = GameObject.FindGameObjectWithTag("Player").GetComponent<CharacterController>();
     }
 
-   
+
     void FixedUpdate()
     {
-        transform.Rotate(0, 0, _rotateSpeed);
+        
     }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.tag == "Player")
@@ -26,5 +31,4 @@ public class Saw : MonoBehaviour
             _characterController.TakeDamage(_damage);
         }
     }
-
 }
