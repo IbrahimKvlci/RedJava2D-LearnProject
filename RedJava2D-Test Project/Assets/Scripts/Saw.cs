@@ -6,6 +6,14 @@ using UnityEngine;
 public class Saw : MonoBehaviour
 {
     GameObject[] _sawPositionObjects;
+    Vector3 _far;
+
+    private bool _getFar = true;
+    private bool _forwardorBack = true;
+
+    float _speed=10;
+    int _farObjectsCount = 0;
+
     void Start()
     {
         _sawPositionObjects = new GameObject[transform.childCount];
@@ -20,11 +28,42 @@ public class Saw : MonoBehaviour
     void FixedUpdate()
     {
         transform.Rotate(0, 0, 5);
+        SawMovement();
     }
 
     void SawMovement()
     {
-
+        
+        
+        if (_getFar)
+        {
+             _far = (_sawPositionObjects[_farObjectsCount].transform.position - transform.position).normalized;
+             _getFar = false;
+        }
+        transform.position += _far * Time.deltaTime * _speed;
+        float _farValue=Vector3.Distance(transform.position,_sawPositionObjects[_farObjectsCount].transform.position);
+        if (_farValue < 0.5f)
+        {
+            if (_farObjectsCount == _sawPositionObjects.Length - 1)
+            {
+                _forwardorBack = false;
+            }
+            else if (_farObjectsCount == 0)
+            {
+                _forwardorBack = true;
+            }
+            if (_forwardorBack)
+            {
+                _farObjectsCount++;
+            }
+            else
+            {
+                _farObjectsCount--;
+            }
+            _getFar = true;
+        }
+      
+       
     }
 
 #if UNITY_EDITOR
