@@ -8,6 +8,9 @@ TagManager:
   - CubeEnemy
   - Saw
   - Fire
+  - LevelEnd
+  - GameEnd
+  - HealBox
   layers:
   - Default
   - TransparentFX

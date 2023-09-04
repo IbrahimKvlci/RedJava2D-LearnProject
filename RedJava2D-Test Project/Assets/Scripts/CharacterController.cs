@@ -18,9 +18,9 @@ public class CharacterController : MonoBehaviour
     private float _speed, _jumpSpeed;
     float _deathTransitionCount = 0;
     private bool _jumpControl=true;
-    [SerializeField] int _heal;
+    [SerializeField] int _health;
 
-    [SerializeField] Text _healText;
+    [SerializeField] Text _healthText;
 
     private Vector3 _cameraFirstPos,_cameraLastPos;
 
@@ -38,8 +38,8 @@ public class CharacterController : MonoBehaviour
         _animator=GetComponent<Animator>();
         _camera = GameObject.FindGameObjectWithTag("MainCamera");
         _cameraFirstPos = _camera.transform.position-transform.position;
-        _heal = 100;
-        _healText.text = $"HEAL {_heal}";
+        _health = 100;
+        UpdateHealthText();
     }
 
     private void Update()
@@ -78,17 +78,17 @@ public class CharacterController : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        _heal -= damage;
-        _healText.text = $"HEAL {_heal}";
+        _health -= damage;
+        UpdateHealthText();
     }
 
     void Death()
     {
-        if (_heal <= 0)
+        if (_health <= 0)
         {
             Time.timeScale = 0.5f;
             _deathTransitionCount += 0.03f;
-            _healText.gameObject.SetActive(false);
+            _healthText.gameObject.SetActive(false);
             _deathTransition.gameObject.SetActive(true);
             _deathTransition.color = new Color(0, 0, 0, _deathTransitionCount);
             if (_deathTransitionCount >= 1)
@@ -96,6 +96,12 @@ public class CharacterController : MonoBehaviour
                 SceneManager.LoadScene(0);
             }
         }
+    }
+
+    void Heal(int _healValue)
+    {
+        _health += _healValue;
+        UpdateHealthText();
     }
 
     void CameraControl()
@@ -130,6 +136,26 @@ public class CharacterController : MonoBehaviour
         {
             TakeDamage(20);
         }
+        if (collision.tag == "LevelEnd")
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        }
+        if (collision.tag == "GameEnd")
+        {
+            SceneManager.LoadScene(0);
+        }
+        if (collision.tag == "HealBox")
+        {
+            Heal(20);
+            collision.gameObject.GetComponent<Collider2D>().enabled = false;
+            collision.gameObject.GetComponent<Animator>().SetBool("IsOpening", true);
+            Destroy(collision.gameObject,3);
+        }
+    }
+
+    void UpdateHealthText()
+    {
+        _healthText.text = $"HEAL {_health}";
     }
 
 }
