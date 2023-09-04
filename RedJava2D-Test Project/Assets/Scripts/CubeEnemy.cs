@@ -8,7 +8,7 @@ public class CubeEnemy : MonoBehaviour
     [SerializeField] GameObject _fire;
     [SerializeField] Sprite _forward, _back;
     SpriteRenderer _renderer;
-    CharacterController _characterController;
+
 
     RaycastHit2D _ray;
     [SerializeField] LayerMask _layerMask;
@@ -20,7 +20,7 @@ public class CubeEnemy : MonoBehaviour
     {
         _player = GameObject.FindGameObjectWithTag("Player");
         _renderer=GetComponent<SpriteRenderer>();
-        _characterController = GameObject.FindGameObjectWithTag("Player").GetComponent<CharacterController>();
+
     }
 
 
@@ -65,11 +65,5 @@ public class CubeEnemy : MonoBehaviour
         return (_player.transform.position - transform.position).normalized;
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.tag == "Player")
-        {
-            _characterController.TakeDamage(_damage);
-        }
-    }
+
 }

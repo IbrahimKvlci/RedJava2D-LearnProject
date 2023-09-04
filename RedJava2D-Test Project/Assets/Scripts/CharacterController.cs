@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
+using UnityEditor.SearchService;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class CharacterController : MonoBehaviour
@@ -8,11 +11,12 @@ public class CharacterController : MonoBehaviour
 
     Rigidbody2D _rigidBody;
     Animator _animator;
-
+    [SerializeField] Image _deathTransition;
 
     private float _horizontal;
     [SerializeField]
     private float _speed, _jumpSpeed;
+    float _deathTransitionCount = 0;
     private bool _jumpControl=true;
     [SerializeField] int _heal;
 
@@ -24,6 +28,12 @@ public class CharacterController : MonoBehaviour
 
     void Start()
     {
+        Time.timeScale = 1;
+        if (PlayerPrefs.GetInt("levelcount") < SceneManager.GetActiveScene().buildIndex)
+        {
+            PlayerPrefs.SetInt("levelcount", SceneManager.GetActiveScene().buildIndex);
+        }
+        
         _rigidBody = GetComponent<Rigidbody2D>();
         _animator=GetComponent<Animator>();
         _camera = GameObject.FindGameObjectWithTag("MainCamera");
@@ -49,6 +59,7 @@ public class CharacterController : MonoBehaviour
     {
         CharacterMovement();
         Animation();
+        Death();
     }
 
     void CharacterMovement()
@@ -71,6 +82,22 @@ public class CharacterController : MonoBehaviour
         _healText.text = $"HEAL {_heal}";
     }
 
+    void Death()
+    {
+        if (_heal <= 0)
+        {
+            Time.timeScale = 0.5f;
+            _deathTransitionCount += 0.03f;
+            _healText.gameObject.SetActive(false);
+            _deathTransition.gameObject.SetActive(true);
+            _deathTransition.color = new Color(0, 0, 0, _deathTransitionCount);
+            if (_deathTransitionCount >= 1)
+            {
+                SceneManager.LoadScene(0);
+            }
+        }
+    }
+
     void CameraControl()
     {
         _cameraLastPos = _cameraFirstPos + transform.position;
@@ -86,6 +113,23 @@ public class CharacterController : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         _jumpControl = true;
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.tag == "Saw")
+        {
+            TakeDamage(100);
+        }
+        else if (collision.tag == "CubeEnemy")
+        {
+            TakeDamage(50);
+
+        }
+        else if (collision.tag == "Fire")
+        {
+            TakeDamage(20);
+        }
     }
 
 }
