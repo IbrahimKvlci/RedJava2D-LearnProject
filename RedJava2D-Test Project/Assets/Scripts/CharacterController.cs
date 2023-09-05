@@ -5,6 +5,7 @@ using UnityEditor.SearchService;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class CharacterController : MonoBehaviour
 {
@@ -12,6 +13,9 @@ public class CharacterController : MonoBehaviour
     Rigidbody2D _rigidBody;
     Animator _animator;
     [SerializeField] Image _deathTransition;
+    [SerializeField] Text _healthText;
+    private GameObject _camera;
+    private PlayerInput _playerInput;
 
     private float _horizontal;
     [SerializeField]
@@ -20,14 +24,46 @@ public class CharacterController : MonoBehaviour
     private bool _jumpControl=true;
     [SerializeField] int _health;
 
-    [SerializeField] Text _healthText;
+    
 
     private Vector3 _cameraFirstPos,_cameraLastPos;
+    private float _newInputHorizontal,_jumpValue;
 
-    private GameObject _camera;
+    private void Awake()
+    {
+        _playerInput=new PlayerInput();
+
+        _playerInput.BasicController.Movement.started += NewMovement;
+        _playerInput.BasicController.Movement.performed += NewMovement;
+        _playerInput.BasicController.Movement.canceled += NewMovement;
+
+        _playerInput.BasicController.Jump.started += NewJump;
+        _playerInput.BasicController.Jump.performed += NewJump;
+        _playerInput.BasicController.Jump.canceled += NewJump;
+    }
+
+    void NewMovement(InputAction.CallbackContext context)
+    {
+        _newInputHorizontal = context.ReadValue<float>();
+    }
+
+    void NewJump(InputAction.CallbackContext context)
+    {
+        _jumpValue = context.ReadValue<float>();
+    }
+
+    private void OnEnable()
+    {
+        _playerInput.BasicController.Enable();
+    }
+    private void OnDisable()
+    {
+        _playerInput.BasicController.Disable();
+    }
 
     void Start()
     {
+
         Time.timeScale = 1;
         if (PlayerPrefs.GetInt("levelcount") < SceneManager.GetActiveScene().buildIndex)
         {
@@ -40,15 +76,21 @@ public class CharacterController : MonoBehaviour
         _cameraFirstPos = _camera.transform.position-transform.position;
         _health = 100;
         UpdateHealthText();
+        
     }
 
-    private void Update()
+    void Jump(float jumpValue)
     {
-        if (Input.GetKeyDown(KeyCode.Space)&&_jumpControl)
+        if ((Input.GetKeyDown(KeyCode.Space) || jumpValue >0) && _jumpControl)
         {
             _rigidBody.AddForce(new Vector2(0, _jumpSpeed));
             _jumpControl = false;
         }
+    }
+
+    private void Update()
+    {
+        Jump(_jumpValue);
     }
     private void LateUpdate()
     {
@@ -57,21 +99,21 @@ public class CharacterController : MonoBehaviour
 
     void FixedUpdate()
     {
-        CharacterMovement();
-        Animation();
+        _horizontal = Input.GetAxisRaw("Horizontal");
+        CharacterMovement(_newInputHorizontal);
+        Animation(_newInputHorizontal);
         Death();
     }
 
-    void CharacterMovement()
+    void CharacterMovement(float horizontal)
     {
-        _horizontal = Input.GetAxisRaw("Horizontal");
 
-        Vector3 vec = new Vector3(_horizontal * _speed, _rigidBody.velocity.y, 0);
+        Vector3 vec = new Vector3(horizontal * _speed, _rigidBody.velocity.y, 0);
 
         _rigidBody.velocity = vec;
-        if (_horizontal != 0)
+        if (horizontal != 0)
         {
-            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x)*_horizontal, transform.localScale.y, transform.localScale.z);
+            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x)* horizontal, transform.localScale.y, transform.localScale.z);
         }
         
     }
@@ -110,9 +152,9 @@ public class CharacterController : MonoBehaviour
         _camera.transform.position = Vector3.Lerp(_camera.transform.position, _cameraLastPos, 0.03f);
     }
 
-    void Animation()
+    void Animation(float horizontal)
     {
-        _animator.SetFloat("Speed", Mathf.Abs(_horizontal));
+        _animator.SetFloat("Speed", Mathf.Abs(horizontal));
         _animator.SetBool("IsJumping", !_jumpControl);
     }
 
